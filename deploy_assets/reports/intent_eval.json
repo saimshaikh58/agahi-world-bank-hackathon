@@ -252,18 +252,18 @@
  "n_total": 9240,
  "file_bytes": 1004126,
  "sklearn_file_bytes": 1625811,
- "inference_ms": 0.4558582599975125,
+ "inference_ms": 0.4507143000000724,
  "chosen": "logistic_regression",
  "comparison": {
   "logistic_regression": {
    "cv_accuracy": 0.9910714285714285,
    "cv_std": 0.0006627407312725107,
-   "seconds": 9.6
+   "seconds": 8.1
   },
   "linear_svc_calibrated": {
    "cv_accuracy": 0.9910714285714285,
    "cv_std": 0.0006627407312725107,
-   "seconds": 2.6
+   "seconds": 2.7
   }
  },
  "features": "TF-IDF word 1-2 grams (max 8000) + char 2-5 grams (max 30000)",

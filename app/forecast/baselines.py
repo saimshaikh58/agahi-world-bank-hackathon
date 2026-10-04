@@ -24,16 +24,16 @@ def seasonal_naive(train_y: np.ndarray, train_dates: pd.DatetimeIndex, test_date
     return out
 
 
-def seasonal_range(all_y: np.ndarray, all_dates: pd.DatetimeIndex, origin: pd.Timestamp) -> tuple[float, float, float] | None:
-    """P10/P50/P90 of historical log-ratios around this day of year (pattern only display)."""
+def seasonal_range(all_y: np.ndarray, all_dates: pd.DatetimeIndex, origin: pd.Timestamp,
+                   qs: tuple = (0.1, 0.5, 0.9)) -> tuple | None:
+    """Quantiles (P10/P50/P90 by default) of historical log-ratios around this day of year (pattern only)."""
     m = _doy_dist(all_dates.dayofyear.values, origin.dayofyear) <= SEASON_WINDOW
     vals = all_y[m]
     if len(vals) < 15:
         vals = all_y
     if len(vals) < 15:
         return None
-    q = np.quantile(vals, [0.1, 0.5, 0.9])
-    return float(q[0]), float(q[1]), float(q[2])
+    return tuple(float(x) for x in np.quantile(vals, list(qs)))
 
 
 class MeanReversion:

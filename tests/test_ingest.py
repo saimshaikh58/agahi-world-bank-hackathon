@@ -67,4 +67,4 @@ def test_locations_come_from_weather_file(restore, fresh_phone):
     r = handle_message("web", fresh_phone, "1", offline=True)
     r = handle_message("web", fresh_phone, "3", offline=True)
     r = handle_message("web", fresh_phone, "1", offline=True)
-    assert "Purano data matra" in r.text and "anuman hoina" in r.text  # history only, labelled
+    assert "Purano data matra" in r.text and "herera anuman" in r.text  # history only, labelled

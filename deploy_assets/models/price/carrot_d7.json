@@ -3,7 +3,7 @@
  "horizon": "d7",
  "chosen": "persistence",
  "status": "pattern only",
- "trained_at": "2026-10-04T07:24:52+05:45",
+ "trained_at": "2026-10-04T17:20:39+05:45",
  "data_version": 1,
  "features": [
   "lp",
@@ -39,11 +39,13 @@
   "pinball": 0.04579903543975473,
   "coverage": 0.8076923076923077,
   "width": 0.4598206398076482,
+  "coverage50": 0.554945054945055,
+  "width50": 0.23044249903890673,
   "n_test": 788
  },
  "best_baseline": "persistence",
- "file_bytes": 242,
- "inference_ms": 0.145,
+ "file_bytes": 270,
+ "inference_ms": 0.074,
  "importance": [],
  "n_rows": 1153
 }

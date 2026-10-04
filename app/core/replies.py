@@ -194,16 +194,48 @@ def forecast(lang: str, crop: str, h: str, sample: bool, offline: bool = False) 
     if st == "unavailable" or f["p50"] is None or stale:
         return _r([head, Part(t(lang, "unavailable"), 0, "value", True), follow], lang, sample,
                   status="unavailable", model=f["model_name"], sources=["forecasts"])
+    rng = display_range(f)
+    if rng is None:
+        return _r([head, Part(t(lang, "unavailable"), 0, "value", True), follow], lang, sample,
+                  status="unavailable", model=f["model_name"], sources=["forecasts"])
     if st == "pattern only":
-        return _r([head, Part(t(lang, "pattern", lo=money(f["p10"]), hi=money(f["p90"])), 0, "value", True),
+        return _r([head, Part(t(lang, "pattern", lo=money(rng[0]), hi=money(rng[1])), 0, "value", True),
                    _asof(lang, offline), follow], lang, sample, status=st, model=f["model_name"], sources=["forecasts"])
     label = "st_seasonal" if h in MONTH_HORIZONS else ("st_reliable" if st == "reliable" else "st_indicative")
     pct = f["pct_change_p50"] or 0.0
-    parts = [head, Part(t(lang, "fc_range", lo=money(f["p10"]), hi=money(f["p90"])), P_VALUE, "value", True),
+    parts = [head, Part(t(lang, "fc_range", lo=money(rng[0]), hi=money(rng[1])), P_VALUE, "value", True),
              Part(change_word(lang, pct, ("fc_up", "fc_down", "fc_same"), SAME_FORECAST_PCT), P_CHANGE, "direction"),
              Part(t(lang, "fc_now", p0=money(f["price0"])), P_DATE, "now"),
              Part(t(lang, label), P_STATUS, "status", True), _asof(lang, offline), follow]
     return _r(parts, lang, sample, status=st, model=f["model_name"], sources=["forecasts"])
+
+
+ROUND_TO = 5
+
+
+def display_range(f: dict) -> tuple[int, int] | None:
+    """Likely range for farmers: calibrated P25-P75 (right about half the time), clipped to never negative and to
+    the crop's historical low and high for that time of year, rounded to the nearest Rs5, and never wider than the
+    80% range (P10-P90)."""
+    lo, hi = f.get("p25"), f.get("p75")
+    if lo is None or hi is None:
+        lo, hi = f.get("p10"), f.get("p90")
+    if lo is None or hi is None:
+        return None
+    w_lo, w_hi = f.get("p10") or lo, f.get("p90") or hi
+    lo, hi = max(lo, 0.0), hi
+    if f.get("band_lo") is not None and f.get("band_hi") is not None and f["band_lo"] < f["band_hi"]:
+        lo, hi = max(lo, f["band_lo"]), min(hi, f["band_hi"])
+    if lo > hi:  # clipping crossed: keep the calibrated middle
+        lo = hi = f.get("p50") or (lo + hi) / 2
+    r_lo = int(round(lo / ROUND_TO) * ROUND_TO)
+    r_hi = int(round(hi / ROUND_TO) * ROUND_TO)
+    r_lo = max(r_lo, int(-(-w_lo // ROUND_TO) * ROUND_TO), 0)   # stay inside the 80% range after rounding
+    r_hi = min(r_hi, int((w_hi // ROUND_TO) * ROUND_TO))
+    if r_lo > r_hi:
+        mid = int(round((f.get("p50") or (lo + hi) / 2) / ROUND_TO) * ROUND_TO)
+        r_lo = r_hi = max(mid, 0)
+    return r_lo, r_hi
 
 
 def _rain_word(lang: str, chance: float | None) -> str:

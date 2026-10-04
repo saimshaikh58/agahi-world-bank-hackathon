@@ -23,7 +23,7 @@ def results_markdown(run_id: int | None = None) -> str:
     s = json.loads(run["summary_json"] or "{}")
     ds = db.q1("SELECT * FROM dataset_versions WHERE active=1") or {}
     rep = json.loads(ds.get("report_json") or "{}")
-    cells = db.q("SELECT crop, horizon, model, status, skill, coverage, dir_acc, n_test FROM backtest_results "
+    cells = db.q("SELECT crop, horizon, model, status, skill, coverage, coverage50, dir_acc, n_test FROM backtest_results "
                  "WHERE run_id=? AND chosen=1", (run["id"],))
     order = ["d7", "d14", "d21", "d28", "m1", "m2", "m3"]
     cells.sort(key=lambda c: (c["crop"], order.index(c["horizon"]) if c["horizon"] in order else 99))
@@ -39,11 +39,12 @@ def results_markdown(run_id: int | None = None) -> str:
         f"hand-written casual set ({s.get('casual_n', 0)} messages, whole NLU): {_pct(s.get('casual_accuracy'))}",
         f"- Model footprint: {fp.get('price_files', 0)} price artifacts, {fp.get('price_bytes', 0) / 1024:.0f} KB total; "
         f"median CPU inference {fp.get('median_inference_ms') or 0:.2f} ms; intent model {s.get('intent_bytes', 0) / 1024:.0f} KB",
-        "", "| crop | horizon | chosen model | status | skill vs best baseline | 80% coverage | direction acc. | test origins |",
-        "|---|---|---|---|---|---|---|---|"]
+        "- Farmers see the shorter 50% range (right about half the time); the wide 80% range is right about 8 times in 10.",
+        "", "| crop | horizon | chosen model | status | skill vs best baseline | 80% coverage | 50% coverage | direction acc. | test origins |",
+        "|---|---|---|---|---|---|---|---|---|"]
     for c in cells:
         lines.append(f"| {c['crop']} | {c['horizon']} | {c['model']} | {c['status']} | {_pct(c['skill'])} | "
-                     f"{_pct(c['coverage'])} | {_pct(c['dir_acc'])} | {c['n_test']} |")
+                     f"{_pct(c['coverage'])} | {_pct(c.get('coverage50'))} | {_pct(c['dir_acc'])} | {c['n_test']} |")
     return "\n".join(lines)
 
 
@@ -54,7 +55,7 @@ def write_all(run_id: int | None = None) -> None:
     card = ("# Agahi model card (auto-generated)\n\n"
             "Small models trained on local data: baselines, Ridge, small HistGradientBoosting, split-conformal "
             "intervals, climatology and a TF-IDF + LogisticRegression intent classifier. No LLM at runtime.\n\n"
-            "## Latest results\n\n" + md + "\n\n## Intended use\nIndicative wholesale price ranges for Kalimati market "
+            "## Latest results\n\n" + md + "\n\n## Intended use\nRough estimates of wholesale price ranges for Kalimati market "
             "and location weather context by SMS. Not farm-gate prices, not financial advice.\n\n## Limitations\n"
             "- Under 4 years of prices: months 1-3 are seasonal outlooks only.\n- Weather beyond about 2 weeks is "
             "climatology.\n- Arrivals include Indian imports.\n- Nepali text needs native review.\n")

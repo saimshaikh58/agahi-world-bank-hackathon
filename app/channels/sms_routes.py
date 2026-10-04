@@ -102,3 +102,14 @@ def jobs_alerts(request: Request) -> dict:
     if settings.serverless:
         outbox.process_once()
     return out
+
+
+@router.api_route("/api/jobs/fetch", methods=["GET", "POST"])
+def jobs_fetch(request: Request) -> dict:
+    """Fetch new Kalimati days. 'Authorization: Bearer <FETCH_TOKEN>' (Vercel Cron sends CRON_SECRET this way)
+    or an admin session. Wrong or missing token: 401."""
+    from app.ingest import fetch_latest
+    sent = request.headers.get("authorization", "")
+    if not (settings.fetch_token and hmac.compare_digest(sent, f"Bearer {settings.fetch_token}")):
+        auth.require_admin(request)
+    return fetch_latest.run()

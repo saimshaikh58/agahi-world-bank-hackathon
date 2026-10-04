@@ -1,6 +1,7 @@
 /* Chat simulator: a calm, document-like conversation (bot replies set in serif, like reading a note),
    with an SMS budget meter under every reply. */
-.chat-app { display: grid; grid-template-columns: 264px 1fr; height: 100vh; height: 100dvh; }
+html, body { overflow-x: hidden; }
+.chat-app { display: grid; grid-template-columns: 264px 1fr; height: 100vh; height: 100dvh; max-width: 100vw; }
 body:has(.sample-banner:not([hidden])) .chat-app { height: calc(100dvh - 31px); }
 .chat-app.no-rail { grid-template-columns: 1fr; height: 100%; min-height: 560px; }
 .chat-app.with-trace { grid-template-columns: 264px 1fr 340px; }
@@ -41,6 +42,8 @@ body:has(.sample-banner:not([hidden])) .chat-app { height: calc(100dvh - 31px); 
 .icon-btn[aria-pressed="true"] { background: var(--brand-50); color: var(--brand-600); border-color: var(--brand-100); }
 .menu-btn { display: none; }
 .icon-btn .short { display: none; }
+.phone-btn .pv-on { display: none; } .chat-app.phone-view .phone-btn .pv-on { display: inline; } .chat-app.phone-view .phone-btn .pv-off { display: none; }
+.icon-btn { white-space: nowrap; }
 .thread { flex: 1; overflow-y: auto; padding: 28px 16px 12px; scroll-behavior: smooth; }
 .thread-inner { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
 .msg-user { align-self: flex-end; max-width: 78%; background: var(--surface-2); border: 1px solid var(--line); border-radius: 16px 16px 4px 16px;
@@ -79,7 +82,7 @@ body:has(.sample-banner:not([hidden])) .chat-app { height: calc(100dvh - 31px); 
 .suggest span { color: var(--ink-3); font-size: 12px; }
 
 /* composer */
-.composer-wrap { padding: 8px 16px 16px; }
+.composer-wrap { padding: 8px 16px 16px; padding-bottom: max(16px, env(safe-area-inset-bottom)); flex-shrink: 0; }
 .composer { max-width: 720px; margin: 0 auto; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 14px; padding: 10px 10px 8px 14px; }
 .composer:focus-within { border-color: var(--brand-500); }
 .quick { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 0 8px; margin-bottom: 6px; border-bottom: 1px solid var(--line); }
@@ -120,3 +123,50 @@ body:has(.sample-banner:not([hidden])) .chat-app { height: calc(100dvh - 31px); 
   .empty h1 { font-size: 27px; }
   .bot-text { font-size: 16px; }
 }
+
+/* Phone view (desktop only): the chat inside a phone-sized frame for screen recording. */
+@media (min-width: 861px) {
+  .chat-app.phone-view { grid-template-columns: 1fr; place-items: center; background: var(--surface-2); }
+  .chat-app.phone-view .rail, .chat-app.phone-view .trace { display: none; }
+  .chat-app.phone-view .main { width: 390px; height: min(844px, calc(100% - 32px)); border: 10px solid #1b1f1c; border-radius: 40px;
+    overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,.18); }
+  .chat-app.phone-view .topbar { padding: 14px 12px 10px; gap: 6px; flex-wrap: nowrap; }
+  .chat-app.phone-view .topbar .chip, .chat-app.phone-view [data-act="trace"] { display: none; }
+  .chat-app.phone-view .topbar .phone { overflow: hidden; text-overflow: ellipsis; min-width: 0; font-size: 14px; }
+  .chat-app.phone-view .keys { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+  .chat-app.phone-view .keys button { width: auto; height: 40px; }
+  .chat-app.phone-view .send { width: 40px; height: 40px; }
+  .chat-app.phone-view .counter { display: none; }
+  .chat-app.phone-view .icon-btn .long { display: none; } .chat-app.phone-view .icon-btn .short { display: inline; }
+  .chat-app.phone-view .thread { padding: 16px 12px 8px; }
+  .chat-app.phone-view .composer-wrap { padding: 6px 10px 12px; }
+  .chat-app.phone-view .hint { display: none; }
+  .chat-app.phone-view .suggest { grid-template-columns: 1fr; }
+  .chat-app.phone-view .empty h1 { font-size: 26px; }
+  .chat-app.phone-view .bot-text { font-size: 16px; }
+  .chat-app.phone-view .msg-user { max-width: 85%; }
+}
+/* Real phones: no phone-view button, safe areas, 44px tap targets, keypad and quick options always visible. */
+@media (max-width: 860px) {
+  .phone-btn { display: none; }
+  .topbar { padding-top: max(10px, env(safe-area-inset-top)); padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); min-height: 56px; }
+  .topbar .phone { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .topbar .spacer { min-width: 0; }
+  .icon-btn { min-height: 44px; min-width: 44px; justify-content: center; }
+  .thread { padding: 16px 12px 8px; }
+  .msg-user { max-width: 88%; }
+  .composer-wrap { padding: 6px max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
+  .composer { padding: 8px; border-radius: 12px; }
+  .quick { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .quick::-webkit-scrollbar { display: none; }
+  .quick-btn { min-height: 44px; padding: 0 14px; flex: 0 0 auto; }
+  .opt { min-height: 44px; padding: 4px 14px 4px 6px; }
+  .opt b { width: 28px; height: 28px; }
+  .keys { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+  .keys button { width: auto; height: 44px; }
+  .send { width: 44px; height: 44px; }
+  .counter { display: none; }
+  .hint { display: none; }
+  .composer textarea { font-size: 16px; }
+}
+@media (max-width: 420px) { .topbar .chip { display: none; } }

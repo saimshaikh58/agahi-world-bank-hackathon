@@ -254,9 +254,10 @@ def market(crop: str = "tomato", _: str = Depends(auth.require_admin)) -> dict:
             continue
         target = (datetime.fromisoformat(f["origin_date"]) + timedelta(days=HORIZON_DAYS[h])).date().isoformat() \
             if f["origin_date"] else None
-        bt = db.q1("SELECT skill, coverage, dir_acc, n_test FROM backtest_results WHERE run_id=? AND crop=? AND horizon=? "
+        bt = db.q1("SELECT skill, coverage, coverage50, dir_acc, n_test FROM backtest_results WHERE run_id=? AND crop=? AND horizon=? "
                    "AND chosen=1", (s.run_id, crop, h)) or {}
-        fcs.append(f | {"target_date": target, "backtest": bt})
+        rng = replies.display_range(f) if f.get("p50") is not None else None
+        fcs.append(f | {"target_date": target, "backtest": bt, "likely": list(rng) if rng else None})
     corr_path = REPORTS_DIR / "weather_market_corr.json"
     corr = json.loads(corr_path.read_text(encoding="utf-8")) if corr_path.exists() else {}
     real = [r for r in hist if not r["carried_over"]]
@@ -282,7 +283,7 @@ def models(_: str = Depends(auth.require_admin)) -> dict:
     for r in runs:
         r["summary"] = json.loads(r.pop("summary_json") or "{}")
     rid = next((r["id"] for r in runs if r["finished_at"]), None)
-    matrix = db.q("SELECT crop, horizon, model, status, skill, coverage, dir_acc, mae_rs, n_test FROM backtest_results "
+    matrix = db.q("SELECT crop, horizon, model, status, skill, coverage, coverage50, dir_acc, mae_rs, n_test FROM backtest_results "
                   "WHERE run_id=? AND chosen=1", (rid,)) if rid else []
     ie = db.q1("SELECT * FROM intent_eval WHERE run_id=?", (rid,)) if rid else None
     intent = None
@@ -330,7 +331,7 @@ def model_cell(crop: str, horizon: str, _: str = Depends(auth.require_admin)) ->
         raise ApiError(404, "not_trained", "Models are not trained yet.")
     preds = db.q("SELECT origin_date, price0, actual, pred, lo, hi FROM backtest_preds WHERE run_id=? AND crop=? AND horizon=? "
                  "ORDER BY origin_date", (rid, crop, horizon))
-    by_model = db.q("SELECT model, mae_log, mae_rs, mape, dir_acc, skill, pinball, coverage, width, n_test, chosen, status "
+    by_model = db.q("SELECT model, mae_log, mae_rs, mape, dir_acc, skill, pinball, coverage, width, coverage50, width50, n_test, chosen, status "
                     "FROM backtest_results WHERE run_id=? AND crop=? AND horizon=?", (rid, crop, horizon))
     by_h = db.q("SELECT horizon, model, mae_rs, chosen FROM backtest_results WHERE run_id=? AND crop=?", (rid, crop))
     p = np.array([r["pred"] for r in preds]) if preds else np.array([])
@@ -452,6 +453,19 @@ async def upload(file: UploadFile = File(...), _: str = Depends(auth.require_adm
             raise ApiError(400, "invalid_bundle", str(e))
     data.invalidate()
     return {"ok": True, "version_id": report.get("version_id"), "report": report}
+
+
+@router.get("/fetch")
+def fetch_status(_: str = Depends(auth.require_admin)) -> dict:
+    """Result of the last data fetch and the latest stored price date."""
+    return {"last": db.get_meta("fetch_last"), "latest_date": (db.q1("SELECT MAX(date) AS d FROM prices") or {}).get("d")}
+
+
+@router.post("/fetch")
+def fetch_now(_: str = Depends(auth.require_admin)) -> dict:
+    """Fetch new Kalimati days now (one small chunk; the page calls again while days are left)."""
+    from app.ingest import fetch_latest
+    return fetch_latest.run()
 
 
 @router.post("/train")
@@ -644,13 +658,15 @@ def test_forecast(crop: str, horizon: str, _: str = Depends(auth.require_admin))
     if horizon not in HORIZONS or crop not in s.crops():
         raise ApiError(400, "bad_input", "Unknown crop or horizon.")
     f = s.forecast(crop, horizon) or {}
-    base = db.q("SELECT model, mae_rs, skill, dir_acc, coverage, n_test, chosen, status FROM backtest_results "
+    base = db.q("SELECT model, mae_rs, skill, dir_acc, coverage, coverage50, n_test, chosen, status FROM backtest_results "
                 "WHERE run_id=? AND crop=? AND horizon=?", (s.run_id, crop, horizon)) if s.run_id else []
     sms = {}
     for lang in ("en", "rn", "ne"):
         r = replies.forecast(lang, crop, horizon, s.is_sample)
         sms[lang] = {"text": r.text, **sms_stats(r.text)}
+    rng = replies.display_range(f) if f.get("p50") is not None else None
     return {"crop": crop, "horizon": horizon, "p10": f.get("p10"), "p50": f.get("p50"), "p90": f.get("p90"),
+            "p25": f.get("p25"), "p75": f.get("p75"), "likely": list(rng) if rng else None,
             "price0": f.get("price0"), "pct": f.get("pct_change_p50"), "status": f.get("status", "not trained"),
             "model": f.get("model_name"), "baselines": base, "sms": sms}
 

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import os
-import secrets
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -70,17 +70,13 @@ def twilio_ready(s: "Settings") -> dict:
             "TWILIO_PHONE_NUMBER": bool(s.twilio_from), "PUBLIC_BASE_URL": bool(s.public_base_url)}
 
 
-def _secret() -> str:
+def _secret(admin_password: str) -> str:
+    """Key that signs admin cookies and CSRF tokens. SECRET_KEY if set; otherwise derived from ADMIN_PASSWORD,
+    so every server instance (including serverless ones with an empty disk) agrees on the same key."""
     env = os.environ.get("SECRET_KEY", "").strip()
     if env:
         return env
-    path = DATA_DIR / ".secret"
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    if path.exists():
-        return path.read_text(encoding="utf-8").strip()
-    s = secrets.token_hex(32)
-    path.write_text(s, encoding="utf-8")
-    return s
+    return hashlib.sha256(("agahi-session-key:" + admin_password).encode("utf-8")).hexdigest()
 
 
 @dataclass
@@ -104,6 +100,8 @@ class Settings:
     public_base_url: str
     sms_verify_signature: bool
     alerts_token: str
+    fetch_token: str
+    auto_fetch: bool
     serverless: bool
     max_upload_mb: int
     brand_primary: str
@@ -119,7 +117,7 @@ def load_settings() -> Settings:
     provider = os.environ.get("SMS_PROVIDER", "mock").strip().lower()
     return Settings(
         admin_password=os.environ.get("ADMIN_PASSWORD", "").strip() or DEFAULT_ADMIN_PASSWORD,
-        secret_key=_secret(),
+        secret_key=_secret(os.environ.get("ADMIN_PASSWORD", "").strip() or DEFAULT_ADMIN_PASSWORD),
         port=_int("PORT", 8000, 1, 65535),
         train_mode=mode if mode in ("fast", "full") else "fast",
         sms_provider=provider if provider in SMS_PROVIDERS else "mock",
@@ -136,6 +134,8 @@ def load_settings() -> Settings:
         public_base_url=os.environ.get("PUBLIC_BASE_URL", "").strip().rstrip("/"),
         sms_verify_signature=os.environ.get("SMS_VERIFY_SIGNATURE", "true").strip().lower() not in ("0", "false", "no"),
         alerts_token=os.environ.get("ALERTS_TOKEN", "").strip(),
+        fetch_token=(os.environ.get("FETCH_TOKEN", "") or os.environ.get("CRON_SECRET", "")).strip(),
+        auto_fetch=os.environ.get("AUTO_FETCH", "1").strip().lower() not in ("0", "false", "no", "off"),
         serverless=IS_SERVERLESS,
         max_upload_mb=_int("MAX_UPLOAD_MB", 60, 1, 500),
         brand_primary=os.environ.get("BRAND_PRIMARY", "").strip(),

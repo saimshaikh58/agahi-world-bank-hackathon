@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import threading
 import logging
 import os
 import sys
@@ -18,7 +19,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app import bootstrap, jobs
+from app import bootstrap, db, jobs
 from app.api import admin_api
 from app.api.errors import ApiError, error_response
 from app.channels import sms_routes, web
@@ -47,7 +48,7 @@ async def lifespan(app: FastAPI):
         if missing:
             log.warning("SMS_PROVIDER=twilio but these are not set: %s", ", ".join(missing))
     if settings.serverless and not os.environ.get("SECRET_KEY"):
-        log.warning("Set SECRET_KEY on this host, or admin logins break when a new instance starts.")
+        log.info("No SECRET_KEY set: admin sessions are signed with a key derived from ADMIN_PASSWORD.")
     if settings.admin_password == "agahi-admin":
         log.warning("Default admin password in use. Set ADMIN_PASSWORD in .env before sharing.")
     yield
@@ -61,7 +62,25 @@ app = FastAPI(title="Agahi | agahi_hackathon", version=VERSION, lifespan=lifespa
 async def ready(request: Request, call_next):
     """Serverless hosts may skip lifespan events, so make sure setup ran before the first request."""
     bootstrap.ensure_ready()
+    _maybe_fetch(request)
     return await call_next(request)
+
+
+def _maybe_fetch(request: Request) -> None:
+    """First request of a new Asia/Kathmandu day starts one fetch of missing days (DB lock, all instances).
+    Local server: in a background thread. Serverless (no background threads): inline, small and time-limited."""
+    if not settings.auto_fetch or request.url.path.startswith(("/static", "/api/jobs/fetch", "/healthz")):
+        return
+    try:
+        from app.ingest import fetch_latest
+        if not db.q1("SELECT id FROM dataset_versions WHERE active=1") or not fetch_latest.claim_today():
+            return
+        if settings.serverless:
+            fetch_latest.run(budget_s=8.0, chunk=3)
+        else:
+            threading.Thread(target=fetch_latest.run, daemon=True).start()
+    except Exception:  # a fetch problem must never break a page
+        log.exception("daily fetch trigger failed")
 
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")

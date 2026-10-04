@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS weather_outlook (
 CREATE TABLE IF NOT EXISTS weather_backtest (
   run_id INTEGER, location TEXT, week INTEGER, variable TEXT, mae_model REAL, mae_clim REAL,
   pinball_model REAL, pinball_clim REAL, skill REAL, n INTEGER, kept INTEGER);
+CREATE TABLE IF NOT EXISTS login_fails (ip TEXT, ts REAL);
 CREATE TABLE IF NOT EXISTS weather_cache (location TEXT PRIMARY KEY, fetched_at TEXT, payload TEXT);
 CREATE TABLE IF NOT EXISTS intent_eval (
   run_id INTEGER, accuracy REAL, by_lang_json TEXT, confusion_json TEXT, labels_json TEXT, n_test INTEGER);
@@ -110,10 +111,21 @@ def connect() -> Iterator[sqlite3.Connection]:
         c.close()
 
 
+ADDED_COLUMNS = {  # table: [(column, type)] added after the first release
+    "forecasts": [("p25", "REAL"), ("p75", "REAL"), ("band_lo", "REAL"), ("band_hi", "REAL")],
+    "backtest_results": [("coverage50", "REAL"), ("width50", "REAL")],
+}
+
+
 def migrate() -> None:
     """Create or upgrade the schema. Idempotent."""
     with connect() as c:
         c.executescript(SCHEMA)
+        for table, cols in ADDED_COLUMNS.items():
+            have = {r["name"] for r in c.execute(f"PRAGMA table_info({table})").fetchall()}
+            for col, typ in cols:
+                if col not in have:
+                    c.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typ}")
         row = c.execute("SELECT version FROM schema_version").fetchone()
         if row is None:
             c.execute("INSERT INTO schema_version(version) VALUES (?)", (SCHEMA_VERSION,))

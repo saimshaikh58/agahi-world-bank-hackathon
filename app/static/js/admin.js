@@ -257,7 +257,7 @@
       '<span class="desc" style="margin:0">Kalimati wholesale, primary variant, Rs/kg. Forecast ranges are P10 to P90, coloured by honest status.</span></div>' +
       '<div class="chart-box tall" id="mPrice"></div><div class="legend"><span class="chip ok">reliable</span><span class="chip warn">indicative</span><span class="chip">pattern only (seasonal range, not a forecast)</span></div>' +
       '<div class="grid g2" style="margin-top:12px"><div><p class="desc">Arrivals at Kalimati (tonnes per day)</p><div class="chart-box short" id="mArr"></div></div><div><p class="desc">Rain, whole-area average (mm per day)</p><div class="chart-box short" id="mRain"></div></div></div></div>' +
-      '<div class="grid g2"><div class="panel"><h3>Forecasts</h3><p class="desc">Latest model run. Skill is versus the best baseline in walk-forward backtests.</p><div id="mFc"></div></div>' +
+      '<div class="grid g2"><div class="panel"><h3>Forecasts</h3><p class="desc">Latest model run. Skill is versus the best baseline in walk-forward backtests. Farmers see the 50% range: right about half the time. The wide 80% range is right about 8 times in 10.</p><div id="mFc"></div></div>' +
       '<div class="panel"><h3>Data health</h3><div id="mHealth"></div></div>' +
       '<div class="panel"><h3>Variant comparison</h3><p class="desc" id="mVarDesc"></p><div class="chart-box" id="mVar"></div></div>' +
       '<div class="panel"><h3>Weather and market, lagged correlation</h3><p class="desc">Correlation, not causation. Rain is the 7-day whole-area total, lagged 0-14 days, against 7-day price and arrivals changes.</p><div id="mCorr"></div></div>' +
@@ -316,8 +316,9 @@
       options: {plugins: {legend: {display: false}}, scales: {x: {ticks: {maxTicksLimit: 8}}}}});
     chart('#mRain', {type: 'bar', data: {labels: labels, datasets: [{label: 'Rain (mm)', data: labels.map(function (l) { return rainMap[l] != null ? rainMap[l] : null; }), backgroundColor: p.info}]},
       options: {plugins: {legend: {display: false}}, scales: {x: {ticks: {maxTicksLimit: 8}}}}});
-    $('#mFc').innerHTML = table([{t: 'Horizon', k: 'horizon'}, {t: 'Target', k: 'target_date'}, {t: 'P10', r: 1, f: function (r) { return fmt(r.p10); }},
-      {t: 'P50', r: 1, f: function (r) { return fmt(r.p50); }}, {t: 'P90', r: 1, f: function (r) { return fmt(r.p90); }},
+    $('#mFc').innerHTML = table([{t: 'Horizon', k: 'horizon'},
+      {t: '50% range', r: 1, f: function (r) { return r.likely ? 'Rs' + r.likely[0] + ' to ' + r.likely[1] : 'n/a'; }},
+      {t: 'P50', r: 1, f: function (r) { return fmt(r.p50); }}, {t: '80% range', r: 1, f: function (r) { return r.p10 == null ? 'n/a' : fmt(r.p10) + ' to ' + fmt(r.p90); }},
       {t: 'Change', r: 1, f: function (r) { return r.pct_change_p50 == null ? 'n/a' : fmt(r.pct_change_p50, 1) + '%'; }},
       {t: 'Status', f: function (r) { return statusChip(r.status); }}, {t: 'Model', k: 'model_name'},
       {t: 'Skill', r: 1, f: function (r) { return pct(r.backtest && r.backtest.skill); }}], d.forecasts, {empty: 'Not trained yet. Go to Data & training and click Train all.'});
@@ -349,7 +350,7 @@
   PAGES.models = function (root) {
     root.innerHTML = '<div class="grid g3"><div class="panel"><h3>Latest run</h3><div id="moRun"></div></div><div class="panel"><h3>Model footprint</h3><p class="desc">Small enough for a laptop or a cheap server.</p><div id="moFoot"></div></div>' +
       '<div class="panel"><h3>Intent classifier</h3><p class="desc">TF-IDF character n-grams + logistic regression, 20% held out.</p><div id="moIntent"></div></div></div>' +
-      '<div class="panel"><div class="panel-head"><div><h3>Forecast status by crop and horizon</h3><p class="desc">Cell shows skill against the best baseline. Click a cell for its backtest. Many cells being pattern only is expected and reported honestly.</p></div>' +
+      '<div class="panel"><div class="panel-head"><div><h3>Forecast status by crop and horizon</h3><p class="desc">Cell shows skill against the best baseline. Click a cell for its backtest. Many cells being pattern only is expected and reported honestly. Farmers see the shorter 50% range, which is right about half the time; the wide 80% range is right about 8 times in 10. Farmers always see the words "rough estimate".</p></div>' +
       '<a class="btn" href="/api/admin/reports/model_card.md">Download model card</a></div><div id="moMatrix"></div></div>' +
       '<div id="moCell" class="grid g2"></div>' +
       '<div class="grid g2"><div class="panel"><h3>Weather weeks 2-4: skill vs climatology</h3><p class="desc">A model is kept only if it beats climatology by 3% or more. Otherwise replies say climatology, not a forecast.</p><div class="chart-box" id="moWxChart"></div><div id="moWx"></div></div>' +
@@ -384,7 +385,7 @@
       var get = function (c, h) { return d.matrix.find(function (m) { return m.crop === c && m.horizon === h; }); };
       $('#moMatrix').innerHTML = d.matrix.length ? '<div class="table-wrap" style="max-height:none"><table class="matrix"><thead><tr><th>Crop</th>' + d.horizons.map(function (h) { return '<th style="text-align:center">' + h + '</th>'; }).join('') + '</tr></thead><tbody>' +
         crops.map(function (c) { return '<tr><td>' + esc(c) + '</td>' + d.horizons.map(function (h) { var m = get(c, h);
-          return m ? '<td class="' + statusClass(m.status) + '" data-c="' + c + '" data-h="' + h + '" title="' + esc(m.status + ', model ' + m.model + ', coverage ' + pct(m.coverage) + ', direction ' + pct(m.dir_acc)) + '">' + (m.skill == null ? 'n/a' : fmt(m.skill * 100, 0) + '%') + '</td>' : '<td class="status-unavailable">n/a</td>'; }).join('') + '</tr>'; }).join('') +
+          return m ? '<td class="' + statusClass(m.status) + '" data-c="' + c + '" data-h="' + h + '" title="' + esc(m.status + ', model ' + m.model + ', 80% range coverage ' + pct(m.coverage) + ', 50% range coverage ' + pct(m.coverage50) + ', direction ' + pct(m.dir_acc)) + '">' + (m.skill == null ? 'n/a' : fmt(m.skill * 100, 0) + '%') + '</td>' : '<td class="status-unavailable">n/a</td>'; }).join('') + '</tr>'; }).join('') +
         '</tbody></table></div><div class="legend"><span class="chip ok">reliable</span><span class="chip warn">indicative</span><span class="chip">pattern only</span><span class="chip bad">unavailable</span></div>' : '<div class="empty-state">No backtests yet.</div>';
       $$('#moMatrix td[data-c]').forEach(function (td) { td.onclick = function () { $$('#moMatrix td').forEach(function (x) { x.classList.remove('sel'); }); td.classList.add('sel'); cell(td.dataset.c, td.dataset.h); }; });
       var first = $('#moMatrix td[data-c]'); if (first) { first.classList.add('sel'); cell(first.dataset.c, first.dataset.h); }
@@ -414,7 +415,7 @@
       head.innerHTML = '<h3>' + esc(crop) + ', ' + esc(h) + '</h3><p class="desc">Chosen ' + esc(chosen.model) + ' (' + esc(chosen.status) + '); best baseline ' + esc(d.meta.best_baseline) + '. Artifact ' + fmt((d.meta.file_bytes || 0) / 1024, 1) + ' KB, inference ' + fmt(d.meta.inference_ms, 2) + ' ms.</p>' +
         table([{t: 'Model', f: function (r) { return esc(r.model) + (r.chosen ? ' <span class="chip ok">chosen</span>' : ''); }}, {t: 'MAE Rs', r: 1, f: function (r) { return fmt(r.mae_rs, 2); }},
           {t: 'MAPE', r: 1, f: function (r) { return pct(r.mape); }}, {t: 'Direction', r: 1, f: function (r) { return pct(r.dir_acc); }}, {t: 'Skill', r: 1, f: function (r) { return pct(r.skill); }},
-          {t: 'Pinball', r: 1, f: function (r) { return fmt(r.pinball, 4); }}, {t: '80% coverage', r: 1, f: function (r) { return pct(r.coverage); }}, {t: 'Mean width', r: 1, f: function (r) { return fmt(r.width, 2); }},
+          {t: 'Pinball', r: 1, f: function (r) { return fmt(r.pinball, 4); }}, {t: '80% range coverage', r: 1, f: function (r) { return pct(r.coverage); }}, {t: '50% range coverage', r: 1, f: function (r) { return pct(r.coverage50); }}, {t: 'Width 80%', r: 1, f: function (r) { return fmt(r.width, 2); }}, {t: 'Width 50%', r: 1, f: function (r) { return fmt(r.width50, 2); }},
           {t: 'Test origins', r: 1, k: 'n_test'}, {t: 'Status', f: function (r) { return statusChip(r.status); }}], d.by_model);
       var pr = d.preds;
       chart('#cAvp', {type: 'line', data: {labels: pr.map(function (x) { return x.date; }), datasets: [
@@ -443,6 +444,33 @@
   }
 
   /* ---------- data & training ---------- */
+  function showFetch(last, latest) {
+    $('#fetchLatest').textContent = latest ? 'Latest price date: ' + latest : '';
+    if (!last) { $('#fetchLine').textContent = 'No fetch has run yet.'; return; }
+    var when = (last.at || '').replace('T', ' ').slice(0, 16);
+    $('#fetchLine').innerHTML = last.ok === false
+      ? '<span class="chip bad">failed</span> ' + esc(last.error || 'Fetch failed. Old data is kept.') + ' <span class="desc">(' + esc(when) + ')</span>'
+      : '<span class="chip ok">ok</span> Last fetch ' + esc(when) + ': ' + (last.rows_added || 0) + ' rows added, latest date ' + esc(last.latest_date || 'unchanged') + '.';
+  }
+  function runFetch(total, round) {
+    var btn = $('#fetchBtn'), prog = $('#fetchProg');
+    if (!btn) return;
+    btn.disabled = true; btn.textContent = 'Fetching...';
+    prog.style.width = Math.min(90, 15 + round * 20) + '%';
+    $('#fetchLine').textContent = round ? 'Still fetching. Rows added so far: ' + total + '.' : 'Contacting the Kalimati website...';
+    api('POST', '/api/admin/fetch', {}).then(function (r) {
+      total += r.rows_added || 0;
+      if (r.ok && r.days_left > 0 && round < 10) { runFetch(total, round + 1); return; }
+      prog.style.width = '100%'; btn.disabled = false; btn.textContent = 'Fetch new data';
+      $('#fetchLatest').textContent = r.latest_date ? 'Latest price date: ' + r.latest_date : '';
+      $('#fetchLine').innerHTML = r.ok === false
+        ? '<span class="chip bad">failed</span> ' + esc(r.error || 'Fetch failed. Old data is kept.')
+        : '<span class="chip ok">done</span> ' + total + ' rows added. Latest date: ' + esc(r.latest_date || 'unchanged') + '.' + (r.empty_days && r.empty_days.length ? ' No market table for: ' + esc(r.empty_days.join(', ')) + '.' : '');
+    }).catch(function (e) {
+      prog.style.width = '0'; btn.disabled = false; btn.textContent = 'Fetch new data';
+      $('#fetchLine').innerHTML = '<span class="chip bad">failed</span> ' + esc(e.message || 'Could not run the fetch.') + ' Old data is kept.';
+    });
+  }
   PAGES.data = function (root) {
     root.innerHTML = '<div class="grid g2"><div class="panel"><h3>Upload data bundle</h3><p class="desc">One ZIP with the scraper and GEE CSVs. Files are recognised by their columns, not their names.</p>' +
       '<div class="drop" id="drop">Drop a .zip here or <label style="text-decoration:underline;cursor:pointer">choose a file<input type="file" id="file" accept=".zip" hidden></label></div><div id="upStatus" style="margin-top:10px"></div></div>' +
@@ -450,6 +478,9 @@
       '<div class="form-row"><label>Mode <select id="mode"><option value="fast">fast (about 3 min)</option><option value="full">full (up to 15 min)</option></select></label>' +
       '<button class="btn btn-primary" id="trainBtn">Train all</button><button class="btn" id="cancelBtn" disabled>Cancel</button></div>' +
       '<div class="progress"><i id="prog" style="width:0"></i></div><p class="desc" id="jobLine" style="margin-top:6px"></p><div class="log" id="jobLog">No training job yet.</div></div></div>' +
+      '<div class="panel"><h3>Fetch new data</h3><p class="desc">Gets new days from the Kalimati website, adds only rows that are new, then updates today\'s estimates with the trained models (no retraining). It also runs by itself on the first visit of each new day.</p>' +
+      '<div class="form-row"><button class="btn btn-primary" id="fetchBtn">Fetch new data</button><span class="desc" id="fetchLatest"></span></div>' +
+      '<div class="progress"><i id="fetchProg" style="width:0"></i></div><p class="desc" id="fetchLine" style="margin-top:6px"></p></div>' +
       '<div class="panel"><h3>Validation report (active dataset)</h3><div id="report"></div></div>' +
       '<div class="grid g2"><div class="panel"><h3>System check</h3><div id="sys"></div></div><div class="panel"><h3>Dataset versions</h3><div id="versions"></div></div></div>';
     panel('#report', function () { return api('GET', '/api/admin/data'); }, function (d, box) {
@@ -469,6 +500,8 @@
     drop.addEventListener('drop', function (e) { if (e.dataTransfer.files[0]) upload(e.dataTransfer.files[0]); });
     $('#file').onchange = function () { if (this.files[0]) upload(this.files[0]); };
     $('#trainBtn').onclick = function () { startTraining($('#mode').value); };
+    api('GET', '/api/admin/fetch').then(function (d) { showFetch(d.last, d.latest_date); }).catch(function () {});
+    $('#fetchBtn').onclick = function () { runFetch(0, 0); };
     if (statusCache.serverless) {
       $('#trainBtn').disabled = true;
       $('#jobLine').textContent = 'Training is turned off on this host. Train locally, run scripts/prepare_deploy.py, then redeploy.';
@@ -557,10 +590,10 @@
     }).catch(function (e) { box.innerHTML = '<div class="err">' + esc(e.message) + '</div>'; });
     function run() {
       panel('#tfOut', function () { return api('GET', '/api/admin/test/forecast?crop=' + $('#tfCrop').value + '&horizon=' + $('#tfH').value); }, function (d, out) {
-        out.innerHTML = '<div class="grid g2"><div><div class="grid g4">' + mini('P10', fmt(d.p10)) + mini('P50', fmt(d.p50)) + mini('P90', fmt(d.p90)) + mini('Today', fmt(d.price0)) + '</div>' +
+        out.innerHTML = '<div class="grid g2"><div><div class="grid g4">' + mini('50% range', d.likely ? d.likely[0] + ' to ' + d.likely[1] : 'n/a') + mini('P50', fmt(d.p50)) + mini('80% range', d.p10 == null ? 'n/a' : fmt(d.p10) + ' to ' + fmt(d.p90)) + mini('Today', fmt(d.price0)) + '</div>' +
           '<p style="margin:12px 0">' + statusChip(d.status) + ' model: ' + esc(d.model || 'none') + '</p>' +
           table([{t: 'Model', f: function (r) { return esc(r.model) + (r.chosen ? ' <span class="chip ok">chosen</span>' : ''); }}, {t: 'MAE Rs', r: 1, f: function (r) { return fmt(r.mae_rs, 2); }},
-            {t: 'Skill', r: 1, f: function (r) { return pct(r.skill); }}, {t: 'Direction', r: 1, f: function (r) { return pct(r.dir_acc); }}, {t: 'Coverage', r: 1, f: function (r) { return pct(r.coverage); }},
+            {t: 'Skill', r: 1, f: function (r) { return pct(r.skill); }}, {t: 'Direction', r: 1, f: function (r) { return pct(r.dir_acc); }}, {t: '80% coverage', r: 1, f: function (r) { return pct(r.coverage); }}, {t: '50% coverage', r: 1, f: function (r) { return pct(r.coverage50); }},
             {t: 'n', r: 1, k: 'n_test'}], d.baselines) + '</div><div>' + smsBoxes(d.sms) + '</div></div>';
       });
     }

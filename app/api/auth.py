@@ -4,10 +4,10 @@ from __future__ import annotations
 import hashlib
 import hmac
 import time
-from collections import defaultdict, deque
 
 from fastapi import Request
 
+from app import db
 from app.api.errors import ApiError
 from app.config import settings
 
@@ -15,7 +15,6 @@ COOKIE = "agahi_admin"
 SESSION_HOURS = 12
 MAX_FAILS = 5
 FAIL_WINDOW_S = 300
-_fails: dict[str, deque] = defaultdict(deque)
 
 
 def _sign(msg: str) -> str:
@@ -44,16 +43,16 @@ def csrf_for(token: str) -> str:
 
 
 def check_password(password: str, ip: str) -> bool:
-    """Constant-time compare with a per-IP failure limit. Raises 429 when locked."""
-    q = _fails[ip]
+    """Constant-time compare with a per-IP failure limit kept in the database (not in one process's memory).
+    Raises 429 when locked."""
     now = time.time()
-    while q and now - q[0] > FAIL_WINDOW_S:
-        q.popleft()
-    if len(q) >= MAX_FAILS:
-        raise ApiError(429, "too_many_attempts", "Too many failed logins. Wait 5 minutes.")
+    db.x("DELETE FROM login_fails WHERE ts < ?", (now - FAIL_WINDOW_S,))
+    n = db.q1("SELECT COUNT(*) AS n FROM login_fails WHERE ip=?", (ip,))["n"]
+    if n >= MAX_FAILS:
+        raise ApiError(429, "too_many_attempts", "Too many wrong passwords. Wait 5 minutes and try again.")
     ok = hmac.compare_digest(password.encode(), settings.admin_password.encode())
     if not ok:
-        q.append(now)
+        db.x("INSERT INTO login_fails(ip, ts) VALUES(?, ?)", (ip, now))
     return ok
 
 

@@ -61,3 +61,26 @@ The last crop, time ahead and question are remembered:
 
 ## Confidence
 0.75 or more: act. Between 0.45 and 0.75: "Did you mean:" with the top two guesses as `1` and `2`, plus `0 Menu`. Below 0.45: "Sorry, I did not understand" and the main menu (logged to the Quality queue). Nothing raises.
+
+## Wording for estimates
+
+Every price forecast reads "rough estimate" (en), "moto anuman" (rn), "मोटो अनुमान" (ne). Cells that are not better than
+the seasonal baseline read "rough estimate from past years". Every weather outlook (days 1 to 7, weeks 2 to 4, months 1 to 3)
+is marked "(estimated)" / "(anuman)" / "(अनुमान)". The price range shown is the "likely range": the calibrated 50% range,
+rounded to Rs5, right about half the time. The internal status (reliable, indicative, pattern only) is never shown to farmers.
+Sell or keep advice also says rough estimate. Every reply stays within 2 SMS segments, with line breaks.
+Nepali (ne) and Roman Nepali (rn) text still needs review by a native speaker.
+
+Example (7 days, English):
+
+```
+Tomato price in 7 days
+Likely Rs50 to Rs70 per kg
+Likely about the same as today
+Today: Rs55
+Rough estimate.
+1 Other time
+2 Other crop
+3 Sell or keep
+0 Menu
+```

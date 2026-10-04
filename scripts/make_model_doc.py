@@ -190,34 +190,41 @@ def prices(doc) -> None:
               "with the test period. The model with the smallest average error is chosen for each crop and horizon.")
     heading(doc, "Price ranges", 2)
     para(doc, "Ranges come from split-conformal calibration: we look at how wrong the chosen model was in earlier "
-              "test blocks and widen the forecast by the 10th and 90th percentile of those errors. So the range is "
-              "meant to contain the real price about 8 times in 10. Each test block is calibrated only on earlier blocks.")
-    heading(doc, "Status rules and how to read them", 2)
+              "test blocks and widen the forecast by percentiles of those errors. The wide range (10th to 90th percentile, "
+              "the 80% range) is meant to contain the real price about 8 times in 10; it stays in the admin. Farmers see the "
+              "shorter likely range (25th to 75th percentile, the 50% range), which is right about half the time. It is "
+              "calibrated the same way, never shrunk by hand, kept above zero and within the crop's lowest and highest "
+              "price for that time of year, rounded to the nearest Rs5, and never wider than the 80% range. Both "
+              "coverages are measured in the backtest and shown on the Models page. Each test block is calibrated only "
+              "on earlier blocks.")
+    heading(doc, "Status rules (internal) and what farmers read", 2)
     table(doc, ["Status", "Rule", "What the farmer reads (English)"], [
         ["Reliable", "Beats the best simple model by at least 5%, gets the direction right at least 58% of the time "
                      "(moves of 2% or more), range holds the real price 70% to 90% of the time, at least 60 test days.",
-         "Good past record, but still a guess."],
+         "Likely Rs.. to Rs.. per kg. Rough estimate."],
         ["Indicative", "A learned model that is at least as good as the simple models, with a range that holds 70% to 90% of the time.",
-         "Rough guess, not sure."],
-        ["Pattern only", "Not better than the simple models.", "Same time last years: Rs.. to Rs.. This is not a forecast."],
-        ["Unavailable", "Too little data, or the crop has had no new price for over a week.", "No forecast we can trust yet."],
+         "Likely Rs.. to Rs.. per kg. Rough estimate."],
+        ["Pattern only", "Not better than the simple models.", "Likely Rs.. to Rs.. per kg. Rough estimate from past years."],
+        ["Unavailable", "Too little data, or the crop has had no new price for over a week.", "No estimate for this yet."],
     ], [2.6, 8.4, 5.0])
-    para(doc, "Months 1 to 3 can never be reliable: there are just over three years of prices, so they are labelled "
-              "as rough seasonal guesses. The sell or keep tip only uses 7 or 14 day forecasts that are reliable; "
-              "otherwise it uses this week's price trend and tomorrow's rain at the farmer's district, and says "
-              "there is no forecast to trust.")
+    para(doc, "The statuses stay internal: they decide what is shown and are reported on the Models page. Farmers "
+              "always read \"rough estimate\" for prices and \"estimated\" for weather. Months 1 to 3 can never be "
+              "reliable: there are just over three years of prices, so they read \"rough estimate from past seasons\". "
+              "The sell or keep tip only uses 7 or 14 day forecasts that are reliable inside the system; otherwise it "
+              "uses this week's price trend and tomorrow's rain at the farmer's district, and says it is based on this "
+              "week's prices. Its wording also says rough estimate.")
 
 
 def weather(doc) -> None:
     heading(doc, "3. Weather")
     table(doc, ["Time ahead", "Method", "What the reply says"], [
         ["Days 1 to 7", "Open-Meteo forecast for the farmer's district (free, no key). Cached 3 hours, 5 second timeout.",
-         "Rain total, the wettest day, daytime temperature. If the internet is down: past-years averages, labelled."],
+         "Rain total, the wettest day, daytime temperature, all marked (estimated). If the internet is down: past-years averages, labelled estimated."],
         ["Weeks 2 to 4", "Ridge models on recent rain and temperature compared with normal. Kept only if they beat "
                          "past-years averages by at least 3% in year-by-year tests with a 28-day gap.",
-         "Usual weekly rain range, labelled \"from past years, not a forecast\" unless a model passed."],
+         "Usual weekly rain range, marked (estimated) and \"estimated from past years\" unless a model passed."],
         ["Months 1 to 3", "Past-years averages for the same 30 days, nudged by whether the last 30 days were wetter or drier than usual.",
-         "Usual rain and whether the last 30 days were wetter or drier than usual."],
+         "Usual rain, marked (estimated), and whether the last 30 days were wetter or drier than usual."],
     ], [2.6, 7.4, 6.0])
     para(doc, "Past-years averages (climatology) are worked out for each district and each day of the year, "
               "smoothed over plus or minus 7 days, from 2015 onward.")
@@ -265,7 +272,7 @@ def model_table(doc, fp: dict, ev: dict) -> None:
     heading(doc, "5. Every model at a glance")
     table(doc, ["Model", "Purpose", "Library", "Input", "Output", "File", "Size", "Time"], [
         ["Price models (91 crop x horizon cells)", "Price change range", "scikit-learn, NumPy",
-         "Price, arrivals, weather features", "Change from today, P10/P50/P90", "models/price/*.joblib",
+         "Price, arrivals, weather features", "Change from today, P10/P25/P50/P75/P90", "models/price/*.joblib",
          f"{fp.get('price_bytes', 0) / 1024:.0f} KB total", f"{fp.get('median_inference_ms') or 0:.2f} ms median (training only)"],
         ["Intent classifier", "What the farmer wants", "scikit-learn to train, NumPy to run",
          "Cleaned message text", "Probability per intent", "models/intent/intent_lite.*",
@@ -338,7 +345,8 @@ def glossary(doc) -> None:
         ["Skill", "How much smaller the error is than the best baseline. 10% skill means 10% less error."],
         ["Walk-forward test", "Testing a model on the past as if it were the future, one block at a time."],
         ["Embargo", "A gap between training data and test data so answers cannot leak."],
-        ["P10, P50, P90", "Low, middle and high values: the real value should be below P10 1 time in 10 and above P90 1 time in 10."],
+        ["P10, P50, P90", "Low, middle and high values: the real value should be below P10 1 time in 10 and above P90 1 time in 10 (the 80% range)."],
+        ["P25, P75", "The shorter likely range shown to farmers (the 50% range): right about half the time."],
         ["Coverage", "How often the real value fell inside the range."],
         ["Climatology", "Past-years averages for this time of year."],
         ["Intent", "What the farmer wants: price, forecast, weather, sell or keep, arrivals, and so on."],

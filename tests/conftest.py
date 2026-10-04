@@ -12,7 +12,7 @@ os.environ.update({
     "AGAHI_DB": str(TMP / "test.db"), "AGAHI_MODELS_DIR": str(TMP / "models"), "AGAHI_REPORTS_DIR": str(TMP / "reports"),
     "AGAHI_LOGS_DIR": str(TMP / "logs"), "AGAHI_BUNDLE_DIR": str(TMP / "bundle"), "LIVE_WEATHER": "0",
     "ADMIN_PASSWORD": "test-pass", "SECRET_KEY": "test-secret", "SMS_PROVIDER": "mock", "SMS_WEBHOOK_SECRET": "",
-    "RATE_PER_MIN": "20",
+    "RATE_PER_MIN": "20", "AUTO_FETCH": "0", "FETCH_TOKEN": "fetch-token",
 })
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))

@@ -3,7 +3,7 @@
  "horizon": "m1",
  "chosen": "hgb",
  "status": "indicative",
- "trained_at": "2026-10-04T07:25:47+05:45",
+ "trained_at": "2026-10-04T17:21:33+05:45",
  "data_version": 1,
  "features": [
   "lp",
@@ -39,11 +39,13 @@
   "pinball": 0.10502230939272271,
   "coverage": 0.8112359550561797,
   "width": 1.255710289019129,
+  "coverage50": 0.5752808988764045,
+  "width50": 0.6584287720718769,
   "n_test": 500
  },
  "best_baseline": "seasonal_naive",
- "file_bytes": 45040,
- "inference_ms": 0.765,
+ "file_bytes": 45064,
+ "inference_ms": 1.765,
  "importance": [],
  "n_rows": 738
 }

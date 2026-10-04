@@ -20,7 +20,7 @@ def test_no_internet_falls_back_to_climatology(monkeypatch):
     w = outlook.next7("kathmandu_valley")
     assert w["method"] == "climatology"
     r = replies.weather7("en", "kathmandu_valley", False, False)
-    assert "From past years, not a forecast" in r.text
+    assert "Estimated from past years" in r.text
 
 
 def test_timeout_is_five_seconds():

@@ -37,12 +37,16 @@ def ensure_ready() -> None:
 
 def _serverless_start() -> None:
     settings.db_path.parent.mkdir(parents=True, exist_ok=True)
+    fresh = False
     if not settings.db_path.exists() and SEED_DB.exists():
         shutil.copyfile(SEED_DB, settings.db_path)
+        fresh = True
         log.info("Cold start: copied seed database")
     _copy_tree(DEPLOY_DIR / "models", MODELS_DIR)
     _copy_tree(DEPLOY_DIR / "reports", REPORTS_DIR)
     db.migrate()
+    if fresh:  # the bundled data is older than today: let the first request fetch the missing days
+        db.set_meta("fetch_day", "")
     if not db.q1("SELECT id FROM dataset_versions WHERE active=1"):
         bundle = ASSETS_DIR / "kalimati_bundle.zip"
         if bundle.exists():

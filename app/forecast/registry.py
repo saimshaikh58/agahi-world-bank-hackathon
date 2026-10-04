@@ -83,34 +83,41 @@ def _train_cell(run_id: int, crop: str, h: str, frame: pd.DataFrame, X: pd.DataF
             st = "indicative"
         row = dict(run_id=run_id, crop=crop, horizon=h, model=name, chosen=int(name == chosen), status=st, **{
             k: _clean(met.get(k)) for k in ("mae_log", "mae_rs", "mape", "dir_acc", "skill", "pinball",
-                                            "coverage", "width", "n_test")})
+                                            "coverage", "width", "coverage50", "width50", "n_test")})
         rows.append(row)
     db.xmany("INSERT INTO backtest_results(run_id,crop,horizon,model,mae_log,mae_rs,mape,dir_acc,skill,pinball,"
-             "coverage,width,n_test,chosen,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+             "coverage,width,n_test,chosen,status,coverage50,width50) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
              [(r["run_id"], r["crop"], r["horizon"], r["model"], r["mae_log"], r["mae_rs"], r["mape"], r["dir_acc"],
-               r["skill"], r["pinball"], r["coverage"], r["width"], r["n_test"], r["chosen"], r["status"])
+               r["skill"], r["pinball"], r["coverage"], r["width"], r["n_test"], r["chosen"], r["status"],
+               r["coverage50"], r["width50"])
               for r in rows])
     _save_test_preds(run_id, crop, h, Xv.index, p0, yv.values, wf, chosen)
     final = _final_fit(chosen, base_name, Xv, yv, X, wf, mode, h)
-    offsets = conformal.interval_offsets(yv.values[wf["tested"]] - wf["preds"][chosen][wf["tested"]])
+    oof = yv.values[wf["tested"]] - wf["preds"][chosen][wf["tested"]]
+    offsets = conformal.interval_offsets(oof)
+    offsets50 = conformal.interval_offsets(oof, conformal.LO50_Q, conformal.HI50_Q)
     t0 = time.perf_counter()
     for _ in range(20):
         point = final["predict"](X.iloc[[-1]])
     infer_ms = (time.perf_counter() - t0) / 20 * 1000
     model_name = chosen
+    lo25 = hi75 = np.nan
     if status == "pattern only":
-        rng = seasonal_range(yv.values, Xv.index, origin)
-        lo, mid, hi = rng if rng else (np.nan, np.nan, np.nan)
+        rng = seasonal_range(yv.values, Xv.index, origin, (0.1, 0.25, 0.5, 0.75, 0.9))
+        lo, lo25, mid, hi75, hi = rng if rng else (np.nan,) * 5
         model_name = "seasonal pattern"
     elif offsets is None:
         status, lo, mid, hi = "unavailable", np.nan, np.nan, np.nan
     else:
         mid = float(point)
         lo, hi = mid + offsets[0], mid + offsets[1]
-    p10, p50, p90 = (price0 * np.exp(v) if np.isfinite(v) else None for v in (lo, mid, hi))
+        if offsets50:
+            lo25, hi75 = mid + offsets50[0], mid + offsets50[1]
+    p10, p25, p50, p75, p90 = (price0 * np.exp(v) if np.isfinite(v) else None for v in (lo, lo25, mid, hi75, hi))
+    band_lo, band_hi = season_band(frame, origin + pd.Timedelta(days=HORIZON_DAYS[h]))
     path = PRICE_DIR / f"{crop}_{h}.joblib"
     joblib.dump({"model": final["object"], "features": FEATURES, "chosen": chosen, "offsets": offsets,
-                 "lambda": final.get("lambda")}, path, compress=3)
+                 "offsets50": offsets50, "lambda": final.get("lambda")}, path, compress=3)
     importance = _importance(final, Xv, yv, h, mode)
     meta = dict(crop=crop, horizon=h, chosen=chosen, status=status, trained_at=now_iso(),
                 data_version=db.get_meta("data_version"), features=FEATURES, metrics=mets[chosen],
@@ -118,10 +125,10 @@ def _train_cell(run_id: int, crop: str, h: str, frame: pd.DataFrame, X: pd.DataF
                 importance=importance, n_rows=int(len(yv)))
     path.with_suffix(".json").write_text(json.dumps(meta, default=_clean, indent=1), encoding="utf-8")
     pct = (p50 / price0 - 1) * 100 if p50 and price0 else None
-    db.x("INSERT INTO forecasts(run_id,origin_date,crop,horizon,p10,p50,p90,price0,pct_change_p50,status,model_name,skill) "
-         "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+    db.x("INSERT INTO forecasts(run_id,origin_date,crop,horizon,p10,p50,p90,price0,pct_change_p50,status,model_name,skill,"
+         "p25,p75,band_lo,band_hi) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
          (run_id, origin.strftime("%Y-%m-%d"), crop, h, p10, p50, p90, price0, pct, status, model_name,
-          _clean(mets[chosen].get("skill"))))
+          _clean(mets[chosen].get("skill")), p25, p75, band_lo, band_hi))
     _ledger(origin, crop, h, p10, p50, p90, price0, status)
     summ = dict(crop=crop, horizon=h, chosen=chosen, status=status, skill=_clean(mets[chosen].get("skill")),
                 coverage=_clean(mets[chosen].get("coverage")), n_test=mets[chosen].get("n_test", 0),
@@ -176,6 +183,21 @@ def _importance(final: dict, Xv: pd.DataFrame, yv: pd.Series, h: str, mode: str)
         return []
     items = sorted(zip(FEATURES, r.importances_mean), key=lambda t: -t[1])[:10]
     return [{"feature": f, "importance": float(v)} for f, v in items]
+
+
+SEASON_BAND_DAYS = 15
+
+
+def season_band(frame: pd.DataFrame, target: pd.Timestamp) -> tuple[float | None, float | None]:
+    """Lowest and highest real price for this crop within +/-15 days of the target's day of year, all years."""
+    p = frame["price_raw"].dropna() if "price_raw" in frame else frame["price"].dropna()
+    if p.empty:
+        return None, None
+    d = np.abs(p.index.dayofyear.values - target.dayofyear)
+    m = np.minimum(d, 366 - d) <= SEASON_BAND_DAYS
+    if not m.any():
+        return None, None
+    return float(p[m].min()), float(p[m].max())
 
 
 def _save_test_preds(run_id, crop, h, dates, p0, y, wf, chosen) -> None:

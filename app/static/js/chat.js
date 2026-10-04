@@ -2,12 +2,18 @@
    segment budget shown underneath. No external dependencies. Used on "/" and inside the Test Console. */
 (function () {
   'use strict';
-  var LS_PHONES = 'agahi-phones', LS_CURRENT = 'agahi-current', LS_THEME = 'agahi-theme';
+  var LS_PHONES = 'agahi-phones', LS_CURRENT = 'agahi-current', LS_THEME = 'agahi-theme', LS_PHONEVIEW = 'agahi-phone-view';
   var DEV = '०१२३४५६७८९';
 
   function store(key, val) {
     try { if (val === undefined) return JSON.parse(localStorage.getItem(key) || 'null'); localStorage.setItem(key, JSON.stringify(val)); }
     catch (e) { return null; }
+  }
+  function statusWords(st) {
+    if (!st) return 'n/a';
+    if (st === 'pattern only') return 'rough estimate from past years';
+    if (st === 'unavailable') return 'no estimate yet';
+    return 'rough estimate';
   }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]; }); }
   function toAscii(s) { return String(s).replace(/[०-९]/g, function (d) { return DEV.indexOf(d); }); }
@@ -26,13 +32,25 @@
     if (cur && cur.label) opts.push(cur);
     return opts.length ? opts : null;
   }
+  /* A line in a block of option lines holds one option, or two separated by two spaces
+     ("1 Hapta 2 dekhi 4" is ONE option). Only a single packed line is split at every number. */
+  function parseMulti(line) {
+    var out = [];
+    line.trim().split(/\s{2,}/).forEach(function (piece) {
+      var m = /^([0-9०-९])\s+(.+)$/.exec(piece);
+      if (m) out.push({key: toAscii(m[1]), label: m[2]});
+    });
+    return out.length ? out : null;
+  }
   function parseOptions(text) {
-    var lines = String(text).split('\n'), block = [];
+    var lines = String(text).split('\n'), rows = [];
     for (var i = lines.length - 1; i >= 0; i--) {
-      var o = /^\s*[0-9०-९]\s/.test(lines[i]) ? parseLine(lines[i]) : null;
-      if (!o) break;
-      block = o.concat(block);
+      if (!/^\s*[0-9०-९]\s/.test(lines[i])) break;
+      rows.unshift(lines[i]);
     }
+    var block = [];
+    if (rows.length === 1) block = parseLine(rows[0]) || [];
+    else rows.forEach(function (r) { block = block.concat(parseMulti(r) || []); });
     return block.length >= 2 ? block : [];
   }
 
@@ -67,6 +85,7 @@
             '<label class="toggle" style="gap:6px"><input type="checkbox" data-el="offline"> Offline</label>') +
           '<span class="spacer"></span>' +
           (opts.rail ? '' : '<button class="icon-btn" data-act="new">New farmer</button>') +
+          (opts.rail ? '<button class="icon-btn phone-btn" data-act="phoneview" aria-pressed="false" title="Show the chat in a phone-sized frame"><span class="pv-off">Phone view</span><span class="pv-on">Exit phone view</span></button>' : '') +
           '<button class="icon-btn" data-act="reset" title="Forget this number and start again">Reset</button>' +
           '<button class="icon-btn" data-act="trace" aria-pressed="false">' + (opts.rail ? '<span class="long">How replies are made</span><span class="short">Trace</span>' : 'Trace') + '</button></div>' +
         '<div class="thread" data-el="thread"><div class="thread-inner" data-el="inner"></div></div>' +
@@ -164,7 +183,7 @@
         '<dt>Rule</dt><dd>' + esc(t.rule || 'none') + '</dd>' +
         '<dt>Data used</dt><dd>' + esc((t.sources || []).join(', ') || 'menu text only') + '</dd>' +
         '<dt>Model</dt><dd>' + esc(t.model || 'none') + '</dd>' +
-        '<dt>Status</dt><dd>' + esc(t.status || 'n/a') + '</dd>' +
+        '<dt>Label</dt><dd>' + esc(statusWords(t.status)) + '</dd>' +
         '<dt>Dropped parts</dt><dd>' + esc((t.dropped_parts || []).join(', ') || 'none (fits)') + '</dd>' +
         '<dt>Latency</dt><dd class="num">' + esc(m.latency_ms != null ? m.latency_ms + ' ms' : 'n/a') + '</dd>' +
         '<dt>Data / run</dt><dd>v' + esc(t.data_version) + ' / run ' + esc(t.model_run) + (t.offline ? ' (offline)' : '') + '</dd></dl>' +
@@ -228,6 +247,7 @@
       else if (b.dataset.act === 'send') { send(el('input').value); el('input').value = ''; updateCounter(); }
       else if (b.dataset.act === 'trace') { st.trace = !st.trace; renderTrace(); }
       else if (b.dataset.act === 'rail') root.classList.toggle('rail-open');
+      else if (b.dataset.act === 'phoneview') setPhoneView(!root.classList.contains('phone-view'));
       else if (b.dataset.act === 'reset' && st.phone) {
         api('POST', admin ? '/api/admin/test/reset' : '/api/chat/reset', {phone: st.phone}).then(function () {
           st.msgs = []; st.selected = null; el('state').textContent = 'NEW'; render(); renderTrace(); });
@@ -250,6 +270,13 @@
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input.value); input.value = ''; updateCounter(); }
     });
     var off = el('offline'); if (off) off.addEventListener('change', function () { st.offline = off.checked; });
+    function setPhoneView(on) {
+      root.classList.toggle('phone-view', on);
+      document.body.classList.toggle('phone-view-on', on);
+      var pb = root.querySelector('[data-act="phoneview"]'); if (pb) pb.setAttribute('aria-pressed', String(on));
+      try { localStorage.setItem(LS_PHONEVIEW, on ? '1' : '0'); } catch (e) {}
+    }
+    if (opts.rail) { var pv = '0'; try { pv = localStorage.getItem(LS_PHONEVIEW) || '0'; } catch (e) {} setPhoneView(pv === '1'); }
     var theme = el('theme');
     if (theme) {
       theme.checked = document.documentElement.dataset.theme === 'dark';

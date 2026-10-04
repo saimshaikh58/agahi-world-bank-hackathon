@@ -41,6 +41,7 @@ Phone numbers are always masked in admin responses (`+977-98****1234`); farmers 
 | POST | `/api/sms/inbound` | provider signature (`X-Twilio-Signature` for twilio; `X-Agahi-Signature` HMAC-SHA256 hex of the raw body with `SMS_WEBHOOK_SECRET` for mock and android_gateway). Off when `SMS_VERIFY_SIGNATURE=false`. | Twilio: form `From, To, Body, MessageSid`. Others: JSON | Twilio: TwiML `text/xml` `<Response><Message action=".../api/sms/status?oid=N">text</Message></Response>`, empty `<Response/>` for duplicates and silent cases, 403 with empty `<Response/>` on a bad signature. Others: `{"ok":true,"queued":int}` |
 | POST | `/api/sms/status?oid=` | same | Twilio: form `MessageSid, MessageStatus`. Others: provider receipt | Twilio: empty TwiML. Others: `{"ok":true}`. `oid` (optional) is our outbox id for TwiML replies. |
 | POST | `/api/jobs/alerts` | `Authorization: Bearer <ALERTS_TOKEN>`, or admin session + CSRF | `{}` | `{"queued":int,"skipped_quiet_hours":bool,"checked":int}` |
+| GET or POST | `/api/jobs/fetch` | `Authorization: Bearer <FETCH_TOKEN or CRON_SECRET>`, or admin session | none | `{"ok":bool,"rows_added":int,"days_added":[date],"empty_days":[date],"latest_date":date,"days_left":int,"errors":[str],"error"?:str}`; 401 with a wrong or missing token. Also called by the daily Vercel Cron. |
 
 Signature URL: `PUBLIC_BASE_URL` + path + query; if `PUBLIC_BASE_URL` is empty, `X-Forwarded-Proto`://`X-Forwarded-Host` + path + query.
 
@@ -63,6 +64,8 @@ Signature URL: `PUBLIC_BASE_URL` + path + query; if `PUBLIC_BASE_URL` is empty, 
 | GET | `/api/admin/data` | | `{"versions":[...],"report":{...},"locations":[...]}` |
 | GET | `/api/admin/syscheck` | | `{"checks":[{"name","ok","detail"}]}` including a `Provider` line (provider name and which Twilio settings are present, never their values) |
 | POST | `/api/admin/upload` | multipart `file` (.zip, max `MAX_UPLOAD_MB`) | `{"ok":true,"version_id":int,"report":{...}}` |
+| GET | `/api/admin/fetch` | none | `{"last":{"at","ok","rows_added","latest_date","error","days_left"}|null,"latest_date":date}` |
+| POST | `/api/admin/fetch` | `{}` + CSRF | same body as `/api/jobs/fetch`. Fetches at most a few days per call; call again while `days_left` > 0. Failure keeps the old data. |
 | POST | `/api/admin/train` | `{"mode":"fast"|"full"}` | `{"job_id":int}`; 409 if one is running; 400 `training_off` on serverless hosts or when training packages are missing |
 | GET | `/api/admin/jobs/{id}` | | `{"id","kind","status","progress","log","error","started_at","finished_at"}` |
 | GET | `/api/admin/jobs/{id}/stream` | | SSE, event `job` with the job JSON every second until finished |
@@ -122,3 +125,6 @@ app.ingest.bundle.ingest_zip(path: Path, is_sample: bool = False) -> dict(report
 app.sms.outbox.enqueue(phone: str, text: str, kind: str, idem: str|None) -> int
 app.jobs.start(kind: str, fn, params) -> int
 ```
+
+
+Forecast rows (`/api/admin/market` forecasts, `/api/admin/test/forecast`) also carry `p25`, `p75` and `likely` ([low, high], the Rs5-rounded 50% range farmers see). Backtest rows carry `coverage50` and `width50` next to the 80% `coverage` and `width`.

@@ -2,7 +2,8 @@ from app import scenarios
 from app.core import replies, templates
 from app.core.sms import sms_stats
 
-BANNED = ("vs 7-day", "pattern only", "conformal", "P10", "P90", "climatology", "indicative", "Tmax", "estimate.")
+BANNED = ("vs 7-day", "pattern only", "conformal", "P10", "P90", "climatology", "indicative", "Tmax",
+          "reliable", "trusted", "trust", "confident", "not a forecast", "anuman hoina", "अनुमान होइन", "भरपर्दो", "bharosa")
 
 
 def test_all_templates_within_two_segments_with_line_breaks():
@@ -38,3 +39,20 @@ def test_arrivals_words():
 def test_price_menu_has_arrivals():
     r = replies.price("en", "tomato", "kathmandu_valley", True, False)
     assert "3 Arrivals" in r.text and "4 Other crop" in r.text and "0 Menu" in r.text
+
+
+def test_no_banned_words_in_any_template():
+    for lang, table in templates.TEMPLATES.items():
+        for key, val in table.items():
+            if isinstance(val, str):
+                assert not any(b.lower() in val.lower() for b in BANNED), (lang, key, val)
+
+
+def test_forecast_and_advice_say_rough_estimate():
+    for h in ("d7", "d14", "m1"):
+        r = replies.forecast("en", "tomato", h, False)
+        low = r.text.lower()
+        assert "rough estimate" in low or "no estimate" in low or "not ready" in low, r.text
+        assert sms_stats(r.text)["segments"] <= 2
+    a = replies.advice("en", "tomato", None, "kathmandu_valley", False, False)
+    assert "rough estimate" in a.text.lower() or "this week" in a.text.lower(), a.text

@@ -108,11 +108,15 @@ def metrics(pred: np.ndarray, y: np.ndarray, fold: np.ndarray, price0: np.ndarra
     cm = np.isfinite(lo)
     coverage = float(np.mean((a[cm] >= lo[cm]) & (a[cm] <= hi[cm]))) if cm.any() else float("nan")
     width = float(np.mean(np.exp(hi[cm]) - np.exp(lo[cm]))) if cm.any() else float("nan")
+    lo5, hi5 = conformal.sequential_intervals(p, a, f, conformal.LO50_Q, conformal.HI50_Q)
+    c5 = np.isfinite(lo5)
+    coverage50 = float(np.mean((a[c5] >= lo5[c5]) & (a[c5] <= hi5[c5]))) if c5.any() else float("nan")
+    width50 = float(np.mean(np.exp(hi5[c5]) - np.exp(lo5[c5]))) if c5.any() else float("nan")
     pin = float(np.mean([conformal.pinball(a[cm], lo[cm], 0.1), conformal.pinball(a[cm], p[cm], 0.5),
                          conformal.pinball(a[cm], hi[cm], 0.9)])) if cm.any() else float("nan")
     skill = 1 - mae_log / base_mae if base_mae > 0 else 0.0
     return dict(mae_log=mae_log, mae_rs=mae_rs, mape=mape, dir_acc=dir_acc, skill=skill, pinball=pin,
-                coverage=coverage, width=width, n_test=int(m.sum()))
+                coverage=coverage, width=width, coverage50=coverage50, width50=width50, n_test=int(m.sum()))
 
 
 def decide_status(model: str, met: dict, horizon: str) -> str:
