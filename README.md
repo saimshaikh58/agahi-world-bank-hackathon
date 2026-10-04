@@ -6,6 +6,10 @@ It ships with a web simulator that behaves exactly like SMS, an operations dashb
 
 A plain-English guide to every model, for judges and non-technical readers: [docs/Agahi_Model_Guide.docx](docs/Agahi_Model_Guide.docx).
 
+One-page technical summary with dataset links: [docs/Agahi_Technical_Summary.pdf](docs/Agahi_Technical_Summary.pdf). Click the preview to open the PDF.
+
+[![Agahi technical summary](docs/Agahi_Technical_Summary.png)](docs/Agahi_Technical_Summary.pdf)
+
 ## Quick start
 
 You need Python 3.10, 3.11, 3.12 or 3.13 installed. Nothing else.
