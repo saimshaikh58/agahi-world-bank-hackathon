@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agahi | agahi_hackathon</title>
+<link rel="icon" href="/static/brand/logo.png">
+<link rel="stylesheet" href="/static/css/base.css">
+<link rel="stylesheet" href="/static/css/chat.css">
+<link rel="stylesheet" href="/static/css/admin.css">
+<style>:root{--brand-700:{{ b.brand_700 }};--brand-600:{{ b.brand_600 }};--brand-500:{{ b.brand_500 }};--accent:{{ b.accent }};}</style>
+<script>try{var t=localStorage.getItem('agahi-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<!-- Chart.js 4.4.1: a vendored copy (app/static/js/vendor/chart.umd.min.js) is used if present, otherwise jsDelivr. -->
+<script src="/static/js/vendor/chart.umd.min.js" onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';s.onload=function(){window.dispatchEvent(new Event('chartjs'))};document.head.appendChild(s)"></script>
+</head>
+<body>
+<div id="login" class="login" hidden>
+  <form class="login-card" id="loginForm">
+    <div class="brand-band login-band">{% if b.has_logo %}<img class="logo" src="/static/brand/logo.png" alt="Agahi">{% else %}<span class="wordmark">Agahi</span>{% endif %}</div>
+    <h1>Agahi operations</h1>
+    <p>Sign in with the admin password from your .env file.</p>
+    <label for="pw">Password</label>
+    <input id="pw" type="password" autocomplete="current-password" required>
+    <button class="btn btn-primary" type="submit">Sign in</button>
+    <div class="login-err" id="loginErr" role="alert"></div>
+  </form>
+</div>
+<div id="app" class="admin" hidden data-logo="{{ '1' if b.has_logo else '' }}">
+  <aside class="side">
+    <div class="side-head brand-band">{% if b.has_logo %}<img class="logo" src="/static/brand/logo.png" alt="Agahi">{% else %}<div class="wordmark">Agahi</div>{% endif %}<div class="band-sub">Operations</div></div>
+    <nav id="nav"></nav>
+    <div class="side-foot"><a href="/" target="_blank" rel="noopener">Open the chat simulator</a></div>
+  </aside>
+  <div class="content">
+    <header class="top">
+      <button class="icon-btn side-toggle" id="sideToggle" aria-label="Menu">☰</button>
+      <h2 id="pageTitle">Overview</h2>
+      <select id="range" aria-label="Date range"><option value="24h">Last 24h</option><option value="7d" selected>Last 7 days</option><option value="30d">Last 30 days</option><option value="90d">Last 90 days</option></select>
+      <span class="spacer"></span>
+      <span class="chip" id="pillFresh"></span><span class="chip" id="pillData"></span><span class="chip info" id="pillEnv">Phase 1: Web simulator</span>
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode">Dark</button>
+      <button class="icon-btn" id="logoutBtn">Sign out</button>
+    </header>
+    <div id="banners"></div>
+    <main id="page" class="page"></main>
+  </div>
+</div>
+<script src="/static/js/chat.js"></script>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

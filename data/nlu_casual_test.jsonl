@@ -1,0 +1,162 @@
+{"text": "aaja golbheda ko rate kati ho", "lang": "rn", "intent": "PRICE", "crop": "tomato"}
+{"text": "golbeda kti ho aaja", "lang": "rn", "intent": "PRICE", "crop": "tomato"}
+{"text": "tamatar ko bhau k cha", "lang": "rn", "intent": "PRICE", "crop": "tomato"}
+{"text": "aalu kati parxa", "lang": "rn", "intent": "PRICE", "crop": "potato"}
+{"text": "pyaaj ko rate bhannu na", "lang": "rn", "intent": "PRICE", "crop": "onion_dry"}
+{"text": "kauli kati maa bikdai cha", "lang": "rn", "intent": "PRICE", "crop": "cauliflower"}
+{"text": "bandakopi ko mol", "lang": "rn", "intent": "PRICE", "crop": "cabbage"}
+{"text": "gajar kati", "lang": "rn", "intent": "PRICE", "crop": "carrot"}
+{"text": "mula ko bhaauu", "lang": "rn", "intent": "PRICE", "crop": "radish"}
+{"text": "bhanta ko price", "lang": "rn", "intent": "PRICE", "crop": "eggplant"}
+{"text": "simi kati ho dai", "lang": "rn", "intent": "PRICE", "crop": "beans"}
+{"text": "karela ko aajko rate", "lang": "rn", "intent": "PRICE", "crop": "bitter_gourd"}
+{"text": "bhindi kati", "lang": "rn", "intent": "PRICE", "crop": "okra"}
+{"text": "farsi ko bhau kti", "lang": "rn", "intent": "PRICE", "crop": "pumpkin"}
+{"text": "golbhedaa rate plz", "lang": "rn", "intent": "PRICE", "crop": "tomato"}
+{"text": "tomato rate", "lang": "en", "intent": "PRICE", "crop": "tomato"}
+{"text": "how much tomatoes today", "lang": "en", "intent": "PRICE", "crop": "tomato"}
+{"text": "potato prc", "lang": "en", "intent": "PRICE", "crop": "potato"}
+{"text": "onion price kalimati pls", "lang": "en", "intent": "PRICE", "crop": "onion_dry"}
+{"text": "cauliflwr price", "lang": "en", "intent": "PRICE", "crop": "cauliflower"}
+{"text": "whats the cabbage rate", "lang": "en", "intent": "PRICE", "crop": "cabbage"}
+{"text": "carrot how much per kg", "lang": "en", "intent": "PRICE", "crop": "carrot"}
+{"text": "okra rate today?", "lang": "en", "intent": "PRICE", "crop": "okra"}
+{"text": "brinjal price", "lang": "en", "intent": "PRICE", "crop": "eggplant"}
+{"text": "price of pumpkin", "lang": "en", "intent": "PRICE", "crop": "pumpkin"}
+{"text": "गोलभेडा कति छ आज", "lang": "ne", "intent": "PRICE", "crop": "tomato"}
+{"text": "आलुको भाउ", "lang": "ne", "intent": "PRICE", "crop": "potato"}
+{"text": "प्याज कति", "lang": "ne", "intent": "PRICE", "crop": "onion_dry"}
+{"text": "काउलीको रेट", "lang": "ne", "intent": "PRICE", "crop": "cauliflower"}
+{"text": "बन्दा कति पर्छ", "lang": "ne", "intent": "PRICE", "crop": "cabbage"}
+{"text": "गाजरको मूल्य", "lang": "ne", "intent": "PRICE", "crop": "carrot"}
+{"text": "मूलाको भाउ कति", "lang": "ne", "intent": "PRICE", "crop": "radish"}
+{"text": "भिन्डी कति हो", "lang": "ne", "intent": "PRICE", "crop": "okra"}
+{"text": "next hapta tamatar kasto hola", "lang": "rn", "intent": "FORECAST", "crop": "tomato"}
+{"text": "alu 2 hapta pachi", "lang": "rn", "intent": "FORECAST", "crop": "potato", "horizon": "d14"}
+{"text": "golbheda 14 din", "lang": "rn", "intent": "FORECAST", "crop": "tomato", "horizon": "d14"}
+{"text": "pyaj aaglo mahina kati hola", "lang": "rn", "intent": "FORECAST", "crop": "onion_dry", "horizon": "m1"}
+{"text": "kauli ko bhau badhla?", "lang": "rn", "intent": "FORECAST", "crop": "cauliflower"}
+{"text": "gajar sasto hola ki", "lang": "rn", "intent": "FORECAST", "crop": "carrot"}
+{"text": "banda 3 hapta ma kati", "lang": "rn", "intent": "FORECAST", "crop": "cabbage", "horizon": "d21"}
+{"text": "tamatar ghatcha ki badhcha", "lang": "rn", "intent": "FORECAST", "crop": "tomato"}
+{"text": "aalu 1 mahina pachhi", "lang": "rn", "intent": "FORECAST", "crop": "potato", "horizon": "m1"}
+{"text": "bhanta ko bhau aaune hapta", "lang": "rn", "intent": "FORECAST", "crop": "eggplant"}
+{"text": "simi 28 din", "lang": "rn", "intent": "FORECAST", "crop": "beans", "horizon": "d28"}
+{"text": "tomato next week", "lang": "en", "intent": "FORECAST", "crop": "tomato", "horizon": "d7"}
+{"text": "potato price in 2 weeks", "lang": "en", "intent": "FORECAST", "crop": "potato", "horizon": "d14"}
+{"text": "will onion go up", "lang": "en", "intent": "FORECAST", "crop": "onion_dry"}
+{"text": "cauliflower 3 months", "lang": "en", "intent": "FORECAST", "crop": "cauliflower", "horizon": "m3"}
+{"text": "cabbage cheaper next month?", "lang": "en", "intent": "FORECAST", "crop": "cabbage", "horizon": "m1"}
+{"text": "carrot price after 10 days", "lang": "en", "intent": "FORECAST", "crop": "carrot", "horizon": "d7"}
+{"text": "tomato forcast", "lang": "en", "intent": "FORECAST", "crop": "tomato"}
+{"text": "okra next wk", "lang": "en", "intent": "FORECAST", "crop": "okra", "horizon": "d7"}
+{"text": "गोलभेडा १४ दिनपछि", "lang": "ne", "intent": "FORECAST", "crop": "tomato", "horizon": "d14"}
+{"text": "आलु अर्को हप्ता कति होला", "lang": "ne", "intent": "FORECAST", "crop": "potato", "horizon": "d7"}
+{"text": "प्याजको भाउ बढ्छ?", "lang": "ne", "intent": "FORECAST", "crop": "onion_dry"}
+{"text": "काउली २ महिनामा", "lang": "ne", "intent": "FORECAST", "crop": "cauliflower", "horizon": "m2"}
+{"text": "बन्दा सस्तो होला", "lang": "ne", "intent": "FORECAST", "crop": "cabbage"}
+{"text": "bholi paani parchha?", "lang": "rn", "intent": "WEATHER"}
+{"text": "aaja mausam kasto cha", "lang": "rn", "intent": "WEATHER"}
+{"text": "dhading ma paani parcha ki", "lang": "rn", "intent": "WEATHER"}
+{"text": "yo hapta barsat", "lang": "rn", "intent": "WEATHER"}
+{"text": "aaglo mahina pani kati", "lang": "rn", "intent": "WEATHER"}
+{"text": "ghaam laagcha bholi?", "lang": "rn", "intent": "WEATHER"}
+{"text": "parsi pani parla", "lang": "rn", "intent": "WEATHER"}
+{"text": "msm kasto", "lang": "rn", "intent": "WEATHER"}
+{"text": "will it rain tmrw", "lang": "en", "intent": "WEATHER"}
+{"text": "weather kavre", "lang": "en", "intent": "WEATHER"}
+{"text": "rain next week?", "lang": "en", "intent": "WEATHER"}
+{"text": "hows the weather", "lang": "en", "intent": "WEATHER"}
+{"text": "next month rain", "lang": "en", "intent": "WEATHER"}
+{"text": "is it sunny tomorrow", "lang": "en", "intent": "WEATHER"}
+{"text": "भोलि पानी पर्ला?", "lang": "ne", "intent": "WEATHER"}
+{"text": "आज मौसम कस्तो", "lang": "ne", "intent": "WEATHER"}
+{"text": "नुवाकोटमा वर्षा", "lang": "ne", "intent": "WEATHER"}
+{"text": "यो हप्ता पानी पर्छ कि", "lang": "ne", "intent": "WEATHER"}
+{"text": "alu becham ki rakhum", "lang": "rn", "intent": "ADVICE", "crop": "potato"}
+{"text": "golbheda bechu ki rakhu", "lang": "rn", "intent": "ADVICE", "crop": "tomato"}
+{"text": "becham alu 500kg", "lang": "rn", "intent": "ADVICE", "crop": "potato"}
+{"text": "mero 200 kg kauli cha bechu?", "lang": "rn", "intent": "ADVICE", "crop": "cauliflower"}
+{"text": "pyaj aaja bechda thik hola", "lang": "rn", "intent": "ADVICE", "crop": "onion_dry"}
+{"text": "gajar rakhne ki", "lang": "rn", "intent": "ADVICE", "crop": "carrot"}
+{"text": "banda kahile bechne", "lang": "rn", "intent": "ADVICE", "crop": "cabbage"}
+{"text": "should i sell my tomatoes", "lang": "en", "intent": "ADVICE", "crop": "tomato"}
+{"text": "sell potato now or wait", "lang": "en", "intent": "ADVICE", "crop": "potato"}
+{"text": "keep onion or sell?", "lang": "en", "intent": "ADVICE", "crop": "onion_dry"}
+{"text": "i have 300kg cabbage, sell?", "lang": "en", "intent": "ADVICE", "crop": "cabbage"}
+{"text": "good time to sell carrot", "lang": "en", "intent": "ADVICE", "crop": "carrot"}
+{"text": "गोलभेडा बेचौं कि राखौं", "lang": "ne", "intent": "ADVICE", "crop": "tomato"}
+{"text": "आलु आज बेच्ने?", "lang": "ne", "intent": "ADVICE", "crop": "potato"}
+{"text": "५०० केजी प्याज बेच्ने कि", "lang": "ne", "intent": "ADVICE", "crop": "onion_dry"}
+{"text": "golbheda kati aayo aaja", "lang": "rn", "intent": "ARRIVALS", "crop": "tomato"}
+{"text": "alu ko aagaman", "lang": "rn", "intent": "ARRIVALS", "crop": "potato"}
+{"text": "kalimati ma pyaj dherai aayo?", "lang": "rn", "intent": "ARRIVALS", "crop": "onion_dry"}
+{"text": "kauli ko aawak", "lang": "rn", "intent": "ARRIVALS", "crop": "cauliflower"}
+{"text": "tomato arrivals today", "lang": "en", "intent": "ARRIVALS", "crop": "tomato"}
+{"text": "how much potato came in", "lang": "en", "intent": "ARRIVALS", "crop": "potato"}
+{"text": "onion supply", "lang": "en", "intent": "ARRIVALS", "crop": "onion_dry"}
+{"text": "cabbage arrival", "lang": "en", "intent": "ARRIVALS", "crop": "cabbage"}
+{"text": "गोलभेडा कति आयो", "lang": "ne", "intent": "ARRIVALS", "crop": "tomato"}
+{"text": "आलुको आगमन", "lang": "ne", "intent": "ARRIVALS", "crop": "potato"}
+{"text": "tomato vs potato", "lang": "en", "intent": "COMPARE"}
+{"text": "which is costly onion or potato", "lang": "en", "intent": "COMPARE"}
+{"text": "indian ra nepali golbheda", "lang": "rn", "intent": "COMPARE", "crop": "tomato"}
+{"text": "alu ra pyaj ko bhau", "lang": "rn", "intent": "COMPARE"}
+{"text": "kauli ki banda kun mahango", "lang": "rn", "intent": "COMPARE"}
+{"text": "गोलभेडा र आलु तुलना", "lang": "ne", "intent": "COMPARE"}
+{"text": "ma kavre ma chhu", "lang": "rn", "intent": "LOCATION"}
+{"text": "mero thau badalnu cha", "lang": "rn", "intent": "LOCATION"}
+{"text": "i am in dhading now", "lang": "en", "intent": "LOCATION"}
+{"text": "change my location", "lang": "en", "intent": "LOCATION"}
+{"text": "म नुवाकोटमा छु", "lang": "ne", "intent": "LOCATION"}
+{"text": "ठाउँ बदल्नु छ", "lang": "ne", "intent": "LOCATION"}
+{"text": "english ma pathaunus", "lang": "rn", "intent": "LANG"}
+{"text": "nepali ma lekha", "lang": "rn", "intent": "LANG"}
+{"text": "reply in english pls", "lang": "en", "intent": "LANG"}
+{"text": "change language", "lang": "en", "intent": "LANG"}
+{"text": "नेपालीमा लेख्नु", "lang": "ne", "intent": "LANG"}
+{"text": "भाषा बदल", "lang": "ne", "intent": "LANG"}
+{"text": "kasari chalaune ho", "lang": "rn", "intent": "HELP"}
+{"text": "maddat garnus", "lang": "rn", "intent": "HELP"}
+{"text": "bujhina k garne", "lang": "rn", "intent": "HELP"}
+{"text": "how do i use this", "lang": "en", "intent": "HELP"}
+{"text": "help me", "lang": "en", "intent": "HELP"}
+{"text": "what can i ask", "lang": "en", "intent": "HELP"}
+{"text": "कसरी प्रयोग गर्ने", "lang": "ne", "intent": "HELP"}
+{"text": "मद्दत चाहियो", "lang": "ne", "intent": "HELP"}
+{"text": "menu pathau", "lang": "rn", "intent": "MENU"}
+{"text": "pheri suru dekhi", "lang": "rn", "intent": "MENU"}
+{"text": "main menu", "lang": "en", "intent": "MENU"}
+{"text": "go back", "lang": "en", "intent": "MENU"}
+{"text": "मेनु", "lang": "ne", "intent": "MENU"}
+{"text": "मुख्य मेनु देखाउ", "lang": "ne", "intent": "MENU"}
+{"text": "aru sms na pathaunu", "lang": "rn", "intent": "STOP"}
+{"text": "alert banda gara", "lang": "rn", "intent": "STOP"}
+{"text": "stop sending me messages", "lang": "en", "intent": "STOP"}
+{"text": "unsubscribe me", "lang": "en", "intent": "STOP"}
+{"text": "अब नपठाउनुहोस्", "lang": "ne", "intent": "STOP"}
+{"text": "सूचना बन्द गर", "lang": "ne", "intent": "STOP"}
+{"text": "alert feri suru garnus", "lang": "rn", "intent": "START"}
+{"text": "pheri pathaunus", "lang": "rn", "intent": "START"}
+{"text": "start alerts again", "lang": "en", "intent": "START"}
+{"text": "subscribe me", "lang": "en", "intent": "START"}
+{"text": "फेरि सुरु गर", "lang": "ne", "intent": "START"}
+{"text": "सूचना फेरि पठाउ", "lang": "ne", "intent": "START"}
+{"text": "namaste dai", "lang": "rn", "intent": "SMALLTALK"}
+{"text": "dhanyabad hai", "lang": "rn", "intent": "SMALLTALK"}
+{"text": "thik cha", "lang": "rn", "intent": "SMALLTALK"}
+{"text": "thanks a lot", "lang": "en", "intent": "SMALLTALK"}
+{"text": "hello there", "lang": "en", "intent": "SMALLTALK"}
+{"text": "good morning", "lang": "en", "intent": "SMALLTALK"}
+{"text": "नमस्ते हजुर", "lang": "ne", "intent": "SMALLTALK"}
+{"text": "धन्यवाद है", "lang": "ne", "intent": "SMALLTALK"}
+{"text": "mero phone ma balance chaina", "lang": "rn", "intent": "UNKNOWN"}
+{"text": "gaai lai k khuwaune", "lang": "rn", "intent": "UNKNOWN"}
+{"text": "bus kahile aaucha", "lang": "rn", "intent": "UNKNOWN"}
+{"text": "who won the match", "lang": "en", "intent": "UNKNOWN"}
+{"text": "send me a loan", "lang": "en", "intent": "UNKNOWN"}
+{"text": "zzzz", "lang": "en", "intent": "UNKNOWN"}
+{"text": "मेरो मोबाइल बिग्रियो", "lang": "ne", "intent": "UNKNOWN"}
+{"text": "बैंक कति बजे खुल्छ", "lang": "ne", "intent": "UNKNOWN"}
+{"text": "tractor kinna paisa chahiyo", "lang": "rn", "intent": "UNKNOWN"}
+{"text": "what time is it", "lang": "en", "intent": "UNKNOWN"}

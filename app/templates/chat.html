@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agahi | agahi_hackathon</title>
+<link rel="icon" href="/static/brand/logo.png">
+<link rel="stylesheet" href="/static/css/base.css">
+<link rel="stylesheet" href="/static/css/chat.css">
+<style>:root{--brand-700:{{ b.brand_700 }};--brand-600:{{ b.brand_600 }};--brand-500:{{ b.brand_500 }};--accent:{{ b.accent }};}</style>
+<script>try{var t=localStorage.getItem('agahi-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+</head>
+<body>
+<div class="sample-banner" id="sampleBanner" hidden>SAMPLE DATA, not real prices</div>
+<div id="chatRoot" class="chat-app" data-logo="{{ '1' if b.has_logo else '' }}"></div>
+<script src="/static/js/chat.js"></script>
+<script>AgahiChat.mount(document.getElementById('chatRoot'), {mode: 'public', rail: true});</script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+[07:24:20] Run 6 started (fast mode). Data prep and climatology
+[07:24:21] Price models: beans
+[07:24:31] Price models: bitter_gourd
+[07:24:41] Price models: cabbage
+[07:24:51] Price models: carrot
+[07:25:01] Price models: cauliflower
+[07:25:12] Price models: eggplant
+[07:25:22] Price models: okra
+[07:25:32] Price models: onion_dry
+[07:25:41] Price models: peas
+[07:25:49] Price models: potato
+[07:25:59] Price models: pumpkin
+[07:26:09] Price models: radish
+[07:26:18] Price models: tomato
+[07:26:28] Weather models (weeks 2-4 vs climatology)
+[07:26:29] Weather models: boundary_mean
+[07:26:30] Weather models: dhading_besi
+[07:26:32] Weather models: kathmandu_valley
+[07:26:33] Weather models: kavre_dhulikhel
+[07:26:35] Weather models: makwanpur_hetauda
+[07:26:36] Weather models: nuwakot_bidur
+[07:26:38] Weather models: sindhupalchok
+[07:26:39] Intent classifier
+[07:26:59] Intent held-out accuracy 99.4% (logistic_regression); casual set 97.5% of 162
+[07:26:59] Weather-market linkage (lagged correlation)
+[07:27:00] Weather outlooks per location
+[07:27:01] Reports: model card, README results
+[07:27:01] Done. Status counts: {'pattern only': 50, 'indicative': 25, 'reliable': 16}
+[07:27:01] Finished in 160.6s

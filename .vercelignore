@@ -1,0 +1,15 @@
+# Keep the Vercel function small: only the app, the bundled data and deploy_assets are needed.
+.venv
+.env
+tests
+docs
+sample_data
+logs
+models
+reports
+data/agahi.db*
+data/.secret
+data/bundle
+**/__pycache__
+*.zip
+!data/kalimati_bundle.zip

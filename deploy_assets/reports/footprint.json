@@ -1,0 +1,37 @@
+{
+ "price_files": 91,
+ "price_bytes": 2035799,
+ "median_inference_ms": 0.686,
+ "largest": [
+  {
+   "name": "cauliflower_m2",
+   "bytes": 49983,
+   "inference_ms": 0.882
+  },
+  {
+   "name": "potato_m1",
+   "bytes": 49862,
+   "inference_ms": 0.997
+  },
+  {
+   "name": "cauliflower_m1",
+   "bytes": 49371,
+   "inference_ms": 0.707
+  },
+  {
+   "name": "tomato_d7",
+   "bytes": 49365,
+   "inference_ms": 0.931
+  },
+  {
+   "name": "potato_d28",
+   "bytes": 49263,
+   "inference_ms": 0.813
+  }
+ ],
+ "intent_bytes": 1004126,
+ "intent_inference_ms": 0.4558582599975125,
+ "weather_files": 1,
+ "weather_bytes": 170972,
+ "is_sample": false
+}
